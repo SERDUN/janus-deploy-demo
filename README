@@ -1,0 +1,89 @@
+# Janus Gateway on Fly.io
+
+This project provides a minimal setup to run [Janus WebRTC Gateway](https://janus.conf.meetecho.com/) inside a Docker container, and deploy it to [Fly.io](https://fly.io/) with WebSocket and media support.
+
+---
+
+## 📦 Project Structure
+
+```
+.
+├── Dockerfile                     # Docker image definition
+├── config/                        # Janus configuration files
+│   ├── janus.jcfg
+│   └── janus.transport.websockets.jcfg
+└── fly.toml                       # Fly.io deployment configuration
+```
+
+---
+
+## 🚀 Deployment
+
+### 1. Install Fly.io CLI
+
+```bash
+curl -L https://fly.io/install.sh | sh
+```
+
+### 2. Authenticate and create app
+
+```bash
+fly auth login
+fly launch
+```
+
+Choose:
+- App name (e.g. `janus-gateway`)
+- Region (e.g. `otp` for Europe - Frankfurt)
+- Dockerfile-based deployment
+
+### 3. Deploy to Fly.io
+
+```bash
+fly deploy
+```
+
+Once deployed, you can access:
+- WebSocket endpoint: `wss://<your-app-name>.fly.dev`
+- Media: will be routed via UDP on port `10000`
+
+---
+
+## ⚙️ Configuration
+
+- WebSocket transport is exposed on port **8188**
+- Media transport (RTP/ICE/STUN) is exposed on **UDP 10000**
+- Logging level is set via env var `JANUS_LOG_LEVEL=4`
+
+You can modify configuration in:
+- `config/janus.jcfg`
+- `config/janus.transport.websockets.jcfg`
+
+---
+
+## 🧪 Testing Locally
+
+To run Janus locally with Docker:
+
+```bash
+docker build -t janus .
+docker run -p 8188:8188 -p 10000:10000/udp janus
+```
+
+Test WebSocket connection with:
+```bash
+websocat -v --protocol janus-protocol ws://localhost:8188
+```
+
+---
+
+## 🛡 Security Note
+
+Do not store secrets in the public `fly.toml` or commit API tokens to version control.
+
+---
+
+## 📚 References
+
+- [Janus Gateway Documentation](https://janus.conf.meetecho.com/docs/)
+- [Fly.io Documentation](https://fly.io/docs/)

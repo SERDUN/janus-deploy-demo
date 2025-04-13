@@ -1,0 +1,58 @@
+# The name of your Fly.io app
+app = "janus-gateway"
+
+# The primary region where the app will be deployed (e.g., otp = Frankfurt)
+primary_region = "otp"
+
+# Signal sent to the app to trigger graceful shutdown
+kill_signal = "SIGINT"
+
+# Timeout before forcefully stopping the app after shutdown signal
+kill_timeout = "5s"
+
+# ─────────────────────────────
+# Build configuration
+[build]
+# (left empty – Fly will use the Dockerfile in the root directory)
+
+# ─────────────────────────────
+# Environment variables
+[env]
+# Sets the Janus logging level (0 = none, 4 = debug)
+JANUS_LOG_LEVEL = "4"
+
+# ─────────────────────────────
+# WebSockets (main transport for Janus)
+[[services]]
+# Protocol used by the transport (WebSocket uses TCP)
+protocol = "tcp"
+# Internal port that Janus listens on for WebSocket connections
+internal_port = 8188
+
+  [[services.ports]]
+  # External port exposed to the internet
+  port = 8188
+  # Enables Fly's HTTP features like TLS termination and health checks
+  handlers = ["http"]
+
+# ─────────────────────────────
+# Media over UDP (RTP/ICE/STUN)
+[[services]]
+# Protocol used for media transmission
+protocol = "udp"
+# Internal port used by Janus for RTP/RTCP
+internal_port = 10000
+
+  [[services.ports]]
+  # External UDP port exposed to the internet
+  port = 10000
+
+# ─────────────────────────────
+# Virtual machine configuration for Fly.io
+[[vm]]
+# Amount of RAM allocated to the instance
+memory = "1gb"
+# CPU type: shared = cost-effective virtual CPU
+cpu_kind = "shared"
+# Number of virtual CPUs
+cpus = 1
